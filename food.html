@@ -1,0 +1,606 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>美味食光 - 这里的味道懂你</title>
+    <!-- 引入 ECharts -->
+    <script src="./node_modules/echarts/dist/echarts.min.js"></script>
+    <style>
+      :root {
+        --primary-color: #ff6b6b;
+        --secondary-color: #feca57;
+        --text-color: #2f3542;
+        --bg-color: #f1f2f6;
+        --card-bg: #ffffff;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      }
+
+      body {
+        background-color: var(--bg-color);
+        color: var(--text-color);
+        line-height: 1.6;
+      }
+
+      /* 导航栏 */
+      header {
+        background-color: var(--card-bg);
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        position: fixed;
+        width: 100%;
+        top: 0;
+        z-index: 1000;
+      }
+
+      nav {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 2rem;
+      }
+
+      .logo {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: var(--primary-color);
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .nav-links {
+        display: flex;
+        gap: 2rem;
+      }
+
+      .nav-links a {
+        text-decoration: none;
+        color: var(--text-color);
+        font-weight: 500;
+        transition: color 0.3s;
+      }
+
+      .nav-links a:hover {
+        color: var(--primary-color);
+      }
+
+      /* Hero 区域 */
+      .hero {
+        height: 80vh;
+        background:
+          linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('./images/hero.jpg');
+        background-size: cover;
+        background-position: center;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        color: white;
+        padding-top: 60px;
+      }
+
+      .hero h1 {
+        font-size: 3.5rem;
+        margin-bottom: 1rem;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+      }
+
+      .hero p {
+        font-size: 1.2rem;
+        margin-bottom: 2rem;
+        max-width: 600px;
+      }
+
+      .btn {
+        padding: 12px 30px;
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+        border-radius: 25px;
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition:
+          transform 0.3s,
+          background-color 0.3s;
+        text-decoration: none;
+      }
+
+      .btn:hover {
+        transform: translateY(-3px);
+        background-color: #ee5253;
+      }
+
+      /* 菜单区域 */
+      .section {
+        padding: 5rem 2rem;
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      .section-title {
+        text-align: center;
+        font-size: 2.5rem;
+        margin-bottom: 3rem;
+        color: var(--text-color);
+      }
+
+      .menu-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+      }
+
+      .menu-card {
+        background: var(--card-bg);
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        transition: transform 0.3s;
+      }
+
+      .menu-card:hover {
+        transform: translateY(-10px);
+      }
+
+      .card-img {
+        height: 200px;
+        width: 100%;
+        object-fit: cover;
+        background-color: #f8f9fa;
+        display: block;
+        position: relative;
+      }
+
+      .card-img::after {
+        content: '图片加载中...';
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: #eee;
+        color: #999;
+        font-size: 0.9rem;
+      }
+
+      .card-content {
+        padding: 1.5rem;
+      }
+
+      .card-title {
+        font-size: 1.25rem;
+        margin-bottom: 0.5rem;
+        display: flex;
+        justify-content: space-between;
+      }
+
+      .price {
+        color: var(--primary-color);
+        font-weight: bold;
+      }
+
+      .card-desc {
+        color: #747d8c;
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        line-height: 1.5;
+        height: 2.7rem;
+      }
+
+      /* 数据分析区域 */
+      .chart-section {
+        background-color: white;
+        padding: 4rem 2rem;
+        margin-top: 2rem;
+        border-radius: 20px;
+      }
+
+      #chart-container {
+        width: 100%;
+        height: 400px;
+      }
+
+      /* 页脚 */
+      footer {
+        background-color: #2f3542;
+        color: white;
+        text-align: center;
+        padding: 2rem;
+        margin-top: 4rem;
+      }
+
+      /* Toast 提示框样式 */
+      .toast {
+        visibility: hidden;
+        min-width: 250px;
+        margin-left: -125px;
+        background-color: #333;
+        color: #fff;
+        text-align: center;
+        border-radius: 2px;
+        padding: 16px;
+        position: fixed;
+        z-index: 1001;
+        left: 50%;
+        bottom: 30px;
+        font-size: 17px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        opacity: 0;
+        transition:
+          opacity 0.5s,
+          bottom 0.5s;
+      }
+
+      .toast.show {
+        visibility: visible;
+        opacity: 1;
+        bottom: 50px;
+      }
+
+      @media (max-width: 768px) {
+        .hero h1 {
+          font-size: 2.5rem;
+        }
+        .nav-links {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- 导航栏 -->
+    <header>
+      <nav>
+        <a href="#" class="logo">🍽️ 美味食光</a>
+        <div class="nav-links">
+          <a href="#home">首页</a>
+          <a href="#menu">招牌菜品</a>
+          <a href="#data">口味分析</a>
+          <a href="#about">关于我们</a>
+        </div>
+      </nav>
+    </header>
+
+    <!-- Hero 区域 -->
+    <section class="hero" id="home">
+      <h1>每一口都是幸福的味道</h1>
+      <p>精选当季新鲜食材，由米其林星级主厨精心烹饪，为您带来前所未有的味蕾盛宴。</p>
+      <a href="#menu" class="btn">立即点餐</a>
+    </section>
+
+    <!-- 菜单展示 -->
+    <section class="section" id="menu">
+      <h2 class="section-title">今日主厨推荐</h2>
+      <div class="menu-grid">
+        <!-- 菜品 1 -->
+        <div class="menu-card">
+          <img src="./images/salad_quinoa.jpg" alt="健康沙拉" class="card-img" />
+          <div class="card-content">
+            <h3 class="card-title">缤纷藜麦沙拉 <span class="price">¥48</span></h3>
+            <p class="card-desc">有机蔬菜搭配进口藜麦，佐以特制油醋汁，健康低脂的首选。</p>
+            <button class="btn" style="width: 100%; padding: 8px">加入购物车</button>
+          </div>
+        </div>
+        <!-- 菜品 2 -->
+        <div class="menu-card">
+          <img src="./images/steak_m5.jpg" alt="经典牛排" class="card-img" />
+          <div class="card-content">
+            <h3 class="card-title">澳洲M5和牛 <span class="price">¥288</span></h3>
+            <p class="card-desc">精选澳洲谷饲牛肉，低温慢煮锁住肉汁，入口即化。</p>
+            <button class="btn" style="width: 100%; padding: 8px">加入购物车</button>
+          </div>
+        </div>
+        <!-- 菜品 3 -->
+        <div class="menu-card">
+          <img src="./images/pizza_napoli.jpg" alt="特色披萨" class="card-img" />
+          <div class="card-content">
+            <h3 class="card-title">那不勒斯披萨 <span class="price">¥88</span></h3>
+            <p class="card-desc">传统意式手工薄底，新鲜马苏里拉芝士与罗勒叶的完美碰撞。</p>
+            <button class="btn" style="width: 100%; padding: 8px">加入购物车</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 其他菜品 -->
+    <section class="section" id="other-menu">
+      <div
+        style="
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 3rem;
+        "
+      >
+        <h2 class="section-title" style="margin-bottom: 0">其他美味推荐</h2>
+        <a
+          href="more_food.html"
+          style="
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1.1rem;
+          "
+          >更多美味推荐 &rarr;</a
+        >
+      </div>
+      <div class="menu-grid">
+        <!-- 菜品 4 -->
+        <div class="menu-card">
+          <img src="./images/pasta_seafood.jpg" alt="意面" class="card-img" />
+          <div class="card-content">
+            <h3 class="card-title">海鲜意面 <span class="price">¥68</span></h3>
+            <p class="card-desc">新鲜大虾与蛤蜊的海洋盛宴，搭配秘制番茄酱汁。</p>
+            <button class="btn" style="width: 100%; padding: 8px">加入购物车</button>
+          </div>
+        </div>
+        <!-- 菜品 5 -->
+        <div class="menu-card">
+          <img src="./images/tiramisu.jpg" alt="甜点" class="card-img" />
+          <div class="card-content">
+            <h3 class="card-title">提拉米苏 <span class="price">¥38</span></h3>
+            <p class="card-desc">入口即化的意大利经典甜点，带给您甜蜜的午后时光。</p>
+            <button class="btn" style="width: 100%; padding: 8px">加入购物车</button>
+          </div>
+        </div>
+        <!-- 菜品 6 -->
+        <div class="menu-card">
+          <img src="./images/mojito.jpg" alt="饮料" class="card-img" />
+          <div class="card-content">
+            <h3 class="card-title">莫吉托 <span class="price">¥28</span></h3>
+            <p class="card-desc">清新的薄荷与青柠，无酒精配方，夏日解暑神器。</p>
+            <button class="btn" style="width: 100%; padding: 8px">加入购物车</button>
+          </div>
+        </div>
+        <!-- 菜品 7 -->
+        <div class="menu-card">
+          <img src="./images/burger_classic.jpg" alt="汉堡" class="card-img" />
+          <div class="card-content">
+            <h3 class="card-title">经典芝士汉堡 <span class="price">¥45</span></h3>
+            <p class="card-desc">厚实多汁的牛肉饼搭配融化的芝士，美式经典风味。</p>
+            <button class="btn" style="width: 100%; padding: 8px">加入购物车</button>
+          </div>
+        </div>
+        <!-- 菜品 8 -->
+        <div class="menu-card">
+          <img src="./images/sushi_platter.jpg" alt="寿司" class="card-img" />
+          <div class="card-content">
+            <h3 class="card-title">精选寿司拼盘 <span class="price">¥128</span></h3>
+            <p class="card-desc">每日空运新鲜鱼生，职人手握，极致鲜美。</p>
+            <button class="btn" style="width: 100%; padding: 8px">加入购物车</button>
+          </div>
+        </div>
+        <!-- 菜品 9 -->
+        <div class="menu-card">
+          <img src="./images/fries_gold.jpg" alt="薯条" class="card-img" />
+          <div class="card-content">
+            <h3 class="card-title">黄金脆薯条 <span class="price">¥22</span></h3>
+            <p class="card-desc">外酥里嫩，搭配番茄酱或蜂蜜芥末酱，停不下来的美味。</p>
+            <button class="btn" style="width: 100%; padding: 8px">加入购物车</button>
+          </div>
+        </div>
+        <!-- 菜品 10 -->
+        <div class="menu-card">
+          <img src="./images/lava_cake.jpg" alt="蛋糕" class="card-img" />
+          <div class="card-content">
+            <h3 class="card-title">熔岩巧克力蛋糕 <span class="price">¥42</span></h3>
+            <p class="card-desc">切开流心的浓郁巧克力，搭配香草冰淇淋，冷热交融。</p>
+            <button class="btn" style="width: 100%; padding: 8px">加入购物车</button>
+          </div>
+        </div>
+        <!-- 菜品 11 -->
+        <div class="menu-card">
+          <img src="./images/orange_juice.jpg" alt="果汁" class="card-img" />
+          <div class="card-content">
+            <h3 class="card-title">鲜榨橙汁 <span class="price">¥25</span></h3>
+            <p class="card-desc">100% 鲜橙现榨，补充每日所需维生素 C。</p>
+            <button class="btn" style="width: 100%; padding: 8px">加入购物车</button>
+          </div>
+        </div>
+        <!-- 菜品 12 -->
+        <div class="menu-card">
+          <img src="./images/cappuccino.jpg" alt="咖啡" class="card-img" />
+          <div class="card-content">
+            <h3 class="card-title">卡布奇诺 <span class="price">¥32</span></h3>
+            <p class="card-desc">香浓意式浓缩与绵密奶泡的经典结合，拉花精致。</p>
+            <button class="btn" style="width: 100%; padding: 8px">加入购物车</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 数据分析图表 (ECharts) -->
+    <section class="section" id="data">
+      <h2 class="section-title">顾客最爱口味分布</h2>
+      <div class="chart-section" style="display: flex; gap: 2rem; flex-wrap: wrap">
+        <div id="chart-container" style="flex: 1; min-width: 300px; height: 400px"></div>
+        <div id="chart-container-2" style="flex: 1; min-width: 300px; height: 400px"></div>
+      </div>
+    </section>
+
+    <footer>
+      <p>&copy; 2024 美味食光餐厅. All Rights Reserved.</p>
+      <p>地址：幸福路88号美食广场 | 电话：021-88888888</p>
+    </footer>
+
+    <!-- Toast 容器 -->
+    <div id="toast" class="toast">已加入购物车</div>
+
+    <script>
+      // 图片加载失败处理
+      document.querySelectorAll('img').forEach(function (img) {
+        img.onerror = function () {
+          var alt = this.alt || '美味菜品'
+          this.src =
+            'https://placehold.jp/24/ff6b6b/ffffff/800x600.png?text=' + encodeURIComponent(alt)
+          this.style.opacity = '0.8'
+        }
+      })
+
+      // Toast 显示函数
+      function showToast(message) {
+        var x = document.getElementById('toast')
+        x.textContent = message
+        x.className = 'toast show'
+        setTimeout(function () {
+          x.className = x.className.replace('show', '')
+        }, 3000)
+      }
+
+      // 初始化 ECharts 饼图（南丁格尔玫瑰图）
+      var chartDom = document.getElementById('chart-container')
+      var myChart = echarts.init(chartDom)
+      var option
+
+      option = {
+        title: {
+          text: '口味偏好分布',
+          left: 'center',
+        },
+        tooltip: {
+          trigger: 'item',
+          formatter: '{a} <br/>{b} : {c} ({d}%)',
+        },
+        legend: {
+          left: 'center',
+          top: 'bottom',
+          data: ['香辣', '清淡', '甜味', '咸鲜', '酸爽', '咖喱', '黑椒', '蒜香'],
+        },
+        series: [
+          {
+            name: '口味偏好',
+            type: 'pie',
+            radius: [20, 140],
+            center: ['50%', '50%'],
+            roseType: 'radius',
+            itemStyle: {
+              borderRadius: 5,
+            },
+            label: {
+              show: false,
+            },
+            emphasis: {
+              label: {
+                show: true,
+              },
+            },
+            data: [
+              { value: 40, name: '香辣' },
+              { value: 33, name: '清淡' },
+              { value: 28, name: '甜味' },
+              { value: 22, name: '咸鲜' },
+              { value: 20, name: '酸爽' },
+              { value: 15, name: '咖喱' },
+              { value: 12, name: '黑椒' },
+              { value: 10, name: '蒜香' },
+            ],
+          },
+        ],
+      }
+
+      option && myChart.setOption(option)
+
+      // 初始化 ECharts 折线图（每周热销趋势）
+      var chartDom2 = document.getElementById('chart-container-2')
+      var myChart2 = echarts.init(chartDom2)
+      var option2
+
+      option2 = {
+        title: {
+          text: '每周热销趋势',
+          left: 'center',
+        },
+        tooltip: {
+          trigger: 'axis',
+        },
+        legend: {
+          data: ['沙拉', '牛排', '披萨', '汉堡', '寿司'],
+          top: 'bottom',
+        },
+        grid: {
+          left: '3%',
+          right: '4%',
+          bottom: '10%',
+          containLabel: true,
+        },
+        xAxis: {
+          type: 'category',
+          boundaryGap: false,
+          data: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
+        },
+        yAxis: {
+          type: 'value',
+        },
+        series: [
+          {
+            name: '沙拉',
+            type: 'line',
+            data: [120, 132, 101, 134, 90, 230, 210],
+          },
+          {
+            name: '牛排',
+            type: 'line',
+            data: [220, 182, 191, 234, 290, 330, 310],
+          },
+          {
+            name: '披萨',
+            type: 'line',
+            data: [150, 232, 201, 154, 190, 330, 410],
+          },
+          {
+            name: '汉堡',
+            type: 'line',
+            data: [320, 332, 301, 334, 390, 330, 320],
+          },
+          {
+            name: '寿司',
+            type: 'line',
+            data: [820, 932, 901, 934, 1290, 1330, 1320],
+          },
+        ],
+      }
+
+      option2 && myChart2.setOption(option2)
+
+      // 窗口大小改变时重绘图表
+      window.addEventListener('resize', function () {
+        myChart.resize()
+        myChart2.resize()
+      })
+
+      // 购物车点击事件
+      var buttons = document.querySelectorAll('.menu-card .btn')
+      buttons.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          // 获取包含按钮的父元素 (.card-content)
+          var cardContent = this.parentElement
+          // 获取标题元素
+          var titleElement = cardContent.querySelector('.card-title')
+          // 获取菜品名称 (获取第一个文本节点，即不包含 span 的部分)
+          var dishName = titleElement.firstChild.textContent.trim()
+
+          showToast(dishName + ' 已加入购物车')
+        })
+      })
+    </script>
+  </body>
+</html>
